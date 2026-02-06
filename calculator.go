@@ -1,38 +1,15 @@
 package sharecalc
 
-import (
-	"math"
-)
+import "fmt"
 
-func CalculateShares(betAmount float64, members []MemberBet) ([]CalculationResult, error) {
-	var results []CalculationResult
-
-	currentTakenPercent := 0.0
-
-	for _, m := range members {
-
-		actualHoldPercent := m.Keep - currentTakenPercent
-
-		if actualHoldPercent < 0 {
-			actualHoldPercent = 0
-		}
-
-		amount := (betAmount * actualHoldPercent) / 100.0
-
-		results = append(results, CalculationResult{
-			UserID:      m.UserID,
-			Level:       m.Level,
-			HoldPercent: toFixed(actualHoldPercent, 2),
-			HoldAmount:  toFixed(amount, 2),
-		})
-
-		currentTakenPercent = m.Keep
+func CalculateShares(memberBet CalMemberBet) {
+	err := Validate(memberBet)
+	if err != nil {
+		return
 	}
 
-	return results, nil
-}
-
-func toFixed(num float64, precision int) float64 {
-	output := math.Pow(10, float64(precision))
-	return float64(math.Round(num*output)) / output
+	sortedMemberBets := GetSortedMemberBets(memberBet)
+	for _, memberBet := range sortedMemberBets {
+		fmt.Println(memberBet)
+	}
 }
