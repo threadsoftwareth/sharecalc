@@ -1,18 +1,37 @@
 package sharecalc
 
 type CalMemberBet struct {
-	MemberID  uint              `json:"member_id"`
-	MID       string            `json:"mID"`
-	Amount    float64           `json:"amount"`
-	MemberBet map[int]MemberBet `json:"member_bet"`
+	MemberID  uint               `json:"member_id"`
+	MID       string             `json:"mID"`
+	Amount    float64            `json:"amount"`
+	MemberBet map[uint]MemberBet `json:"member_bet"` // key is MemberID
 }
 
 type MemberBet struct {
-	MemberID         uint    `json:"member_id"`
-	ParentID         uint    `json:"parent_id"`
-	Level            int     `json:"level"`
+	MemberID     uint    `json:"member_id"`
+	ParentID     uint    `json:"parent_id"`
+	Level        int     `json:"level"`
+	GivePt       float64 `json:"stake_percent_take"`
+	KeepPt       float64 `json:"comm_percent_take"`
+	ForcePt      float64 `json:"force_percent_bet"`
+	TakeRemainPT float64 `json:"stake_percent_bet"`
+	Commission   float64 `json:"comm_percent_bet"`
+}
+
+type ShareBetResult struct {
+	MemberID uint `json:"member_id"`
+	ParentID uint `json:"parent_id"`
+	Level    int  `json:"level"`
+	// bet
+	StakePercentBet float64 `json:"stake_percent_bet"`
+	CommPercentBet  float64 `json:"comm_percent_bet"`
+	StakeBet        float64 `json:"stake_bet"`
+	CommBet         float64 `json:"comm_bet"`
+	WinLossBet      float64 `json:"win_loss_bet"`
+	// take
 	StakePercentTake float64 `json:"stake_percent_take"`
 	CommPercentTake  float64 `json:"comm_percent_take"`
-	StakePercentBet  float64 `json:"stake_percent_bet"`
-	CommPercentBet   float64 `json:"comm_percent_bet"`
+	StakeTake        float64 `json:"stake_take"`
+	CommTake         float64 `json:"comm_take"`
+	WinLossTake      float64 `json:"win_loss_take"`
 }

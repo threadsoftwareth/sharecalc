@@ -21,8 +21,8 @@ func Validate(memberBet CalMemberBet) error {
 		if memberBet.MemberID == 0 {
 			return fmt.Errorf("member bet member id is zero")
 		}
-		if memberBet.Level != key {
-			return fmt.Errorf("member bet level %d does not match map key %d", memberBet.Level, key)
+		if memberBet.MemberID != uint(key) {
+			return fmt.Errorf("member bet memberID %d does not match map key %d", memberBet.Level, key)
 		}
 	}
 

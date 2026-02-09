@@ -1,15 +1,87 @@
 package sharecalc
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-func CalculateShares(memberBet CalMemberBet) {
-	err := Validate(memberBet)
-	if err != nil {
-		return
+func CalculateShareBets(memberBet CalMemberBet, MemberID uint) (map[int]ShareBetResult, error) {
+	// 1. ดึงสมาชิกเริ่มต้น (Player)
+	current, ok := memberBet.MemberBet[MemberID]
+	if !ok {
+		return nil, fmt.Errorf("member not found")
 	}
 
-	sortedMemberBets := GetSortedMemberBets(memberBet)
-	for _, memberBet := range sortedMemberBets {
-		fmt.Println(memberBet)
+	stake := memberBet.Amount
+	pt_remain := 100.00
+	pt_nouse := 0.00
+	pt_totaltake := 0.00
+	attributes := map[int]ShareBetResult{}
+
+	for current.Level > 0 && current.ParentID != 0 {
+
+		member := current
+		parent, ok := memberBet.MemberBet[member.ParentID]
+		if !ok {
+			return nil, fmt.Errorf("parent member not found for member id %d", member.MemberID)
+		}
+
+		current = parent
+		level := parent.Level
+
+		pt_takeremain := member.TakeRemainPT
+		pt_keep := member.KeepPt
+		parent_pt_give := parent.GivePt
+		parent_pt_force := parent.ForcePt
+
+		pt_takepercent := 0.00
+		if level > 0 {
+			if pt_takeremain > 0 {
+				tempValue := pt_nouse
+				if pt_nouse >= pt_takeremain {
+					tempValue = pt_takeremain
+				}
+				pt_takepercent = pt_keep + tempValue
+			} else {
+				pt_takepercent = pt_keep
+			}
+
+			if parent_pt_force > (pt_totaltake + pt_takepercent) {
+				pt_takepercent = parent_pt_force - pt_totaltake
+			}
+		} else {
+
+			pt_takepercent = pt_remain
+		}
+
+		pt_totaltake += pt_takepercent
+		pt_nouse = (parent_pt_give - pt_totaltake)
+
+		stake_take := pt_takepercent * stake * 0.01
+		stake_bet := pt_remain * stake * 0.01
+
+		current_pt_remain := pt_remain
+		pt_remain -= pt_takepercent
+
+		if (100.0-pt_remain) > parent_pt_give && level > 0 {
+			return nil, fmt.Errorf("Incorrect PT!! member id %d", member.MemberID)
+		}
+
+		attributes[member.Level] = ShareBetResult{
+			MemberID:         member.MemberID,
+			ParentID:         member.ParentID,
+			Level:            member.Level,
+			StakePercentBet:  current_pt_remain,
+			CommPercentBet:   member.Commission,
+			StakeBet:         stake_bet,
+			StakePercentTake: pt_takepercent,
+			StakeTake:        stake_take,
+			CommPercentTake:  parent.Commission,
+		}
+		fmt.Println("attributes:", attributes)
 	}
+
+	jsonData, _ := json.MarshalIndent(attributes, "", "  ")
+	fmt.Println(string(jsonData))
+	return attributes, nil
 }

@@ -5,17 +5,16 @@ import (
 )
 
 func GetSortedMemberBets(memberBet CalMemberBet) []MemberBet {
-	keys := make([]int, 0, len(memberBet.MemberBet))
-	for k := range memberBet.MemberBet {
-		keys = append(keys, k)
+
+	sortedBets := make([]MemberBet, 0, len(memberBet.MemberBet))
+	for _, v := range memberBet.MemberBet {
+		sortedBets = append(sortedBets, v)
 	}
 
-	sort.Sort(sort.Reverse(sort.IntSlice(keys)))
-
-	sortedBets := make([]MemberBet, 0, len(keys))
-	for _, k := range keys {
-		sortedBets = append(sortedBets, memberBet.MemberBet[k])
-	}
+	// 2. Sort ตาม Level จากมากไปน้อย (Descending Order)
+	sort.Slice(sortedBets, func(i, j int) bool {
+		return sortedBets[i].Level > sortedBets[j].Level
+	})
 
 	return sortedBets
 }

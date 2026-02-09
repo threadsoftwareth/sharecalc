@@ -1,57 +1,62 @@
 package sharecalc
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCalculateShares(t *testing.T) {
+func TestCalculateSharesBet(t *testing.T) {
 	mockData := CalMemberBet{
 		MemberID: 4884314,
 		MID:      "1,17276,20463,4498374",
-		Amount:   1000.0,
-		MemberBet: map[int]MemberBet{
-			4: {
-				MemberID:         4884314,
-				ParentID:         4498374,
-				Level:            4,
-				StakePercentTake: 0,
-				CommPercentTake:  0,
-				StakePercentBet:  100,
-				CommPercentBet:   0,
+		Amount:   100.0,
+		MemberBet: map[uint]MemberBet{
+			4884314: {
+				MemberID:     4884314,
+				ParentID:     4498374,
+				Level:        6,
+				GivePt:       0,
+				KeepPt:       85,
+				ForcePt:      0,
+				TakeRemainPT: 1,
+				Commission:   0,
 			},
-			2: {
-				MemberID:         4498374,
-				ParentID:         20463,
-				Level:            2,
-				StakePercentTake: 85,
-				CommPercentTake:  0,
-				StakePercentBet:  100,
-				CommPercentBet:   0,
+			4498374: {
+				MemberID:     4498374,
+				ParentID:     20463,
+				Level:        4,
+				GivePt:       85,
+				KeepPt:       5,
+				TakeRemainPT: 1,
+				Commission:   0,
+			},
+			20463: {
+				MemberID:     20463,
+				ParentID:     1,
+				Level:        1,
+				GivePt:       90,
+				KeepPt:       10,
+				TakeRemainPT: 1,
+				Commission:   0,
 			},
 			1: {
-				MemberID:         20463,
-				ParentID:         17276,
-				Level:            1,
-				StakePercentTake: 5,
-				CommPercentTake:  0,
-				StakePercentBet:  15,
-				CommPercentBet:   0,
-			},
-			0: {
-				MemberID:         17276,
-				ParentID:         1,
-				Level:            0,
-				StakePercentTake: 10,
-				CommPercentTake:  0,
-				StakePercentBet:  10,
-				CommPercentBet:   0,
+				MemberID:     1,
+				ParentID:     1,
+				Level:        0,
+				GivePt:       100,
+				KeepPt:       0,
+				TakeRemainPT: 1,
+				Commission:   0,
 			},
 		},
 	}
 
-	CalculateShares(mockData)
+	response, err := CalculateShareBets(mockData, 4884314)
+
+	fmt.Println(response)
+	fmt.Println(err)
 
 	assert.NotNil(t, mockData)
 }
@@ -68,7 +73,7 @@ func TestValidate(t *testing.T) {
 				MemberID: 123,
 				MID:      "123,456",
 				Amount:   1000.0,
-				MemberBet: map[int]MemberBet{
+				MemberBet: map[uint]MemberBet{
 					1: {
 						MemberID: 123,
 						ParentID: 456,
@@ -89,7 +94,7 @@ func TestValidate(t *testing.T) {
 				MemberID:  123,
 				MID:       "123",
 				Amount:    1000.0,
-				MemberBet: map[int]MemberBet{},
+				MemberBet: map[uint]MemberBet{},
 			},
 			wantError: "member bet is empty",
 		},
@@ -99,7 +104,7 @@ func TestValidate(t *testing.T) {
 				MemberID: 123,
 				MID:      "123,456",
 				Amount:   0.0,
-				MemberBet: map[int]MemberBet{
+				MemberBet: map[uint]MemberBet{
 					1: {
 						MemberID: 123,
 						ParentID: 456,
@@ -115,7 +120,7 @@ func TestValidate(t *testing.T) {
 				MemberID: 123,
 				MID:      "123,456",
 				Amount:   1000.0,
-				MemberBet: map[int]MemberBet{
+				MemberBet: map[uint]MemberBet{
 					1: {
 						MemberID: 123,
 						ParentID: 0,
@@ -131,7 +136,7 @@ func TestValidate(t *testing.T) {
 				MemberID: 123,
 				MID:      "123,456",
 				Amount:   1000.0,
-				MemberBet: map[int]MemberBet{
+				MemberBet: map[uint]MemberBet{
 					1: {
 						MemberID: 0,
 						ParentID: 456,
@@ -147,7 +152,7 @@ func TestValidate(t *testing.T) {
 				MemberID: 123,
 				MID:      "123,456",
 				Amount:   1000.0,
-				MemberBet: map[int]MemberBet{
+				MemberBet: map[uint]MemberBet{
 					1: {
 						MemberID: 123,
 						ParentID: 456,
@@ -168,7 +173,7 @@ func TestValidate(t *testing.T) {
 				MemberID: 123,
 				MID:      "123,456,789",
 				Amount:   1000.0,
-				MemberBet: map[int]MemberBet{
+				MemberBet: map[uint]MemberBet{
 					1: {
 						MemberID: 123,
 						ParentID: 456,
@@ -189,7 +194,7 @@ func TestValidate(t *testing.T) {
 				MemberID: 123,
 				MID:      "123,999",
 				Amount:   1000.0,
-				MemberBet: map[int]MemberBet{
+				MemberBet: map[uint]MemberBet{
 					1: {
 						MemberID: 123,
 						ParentID: 456, // 456 is not in MID
