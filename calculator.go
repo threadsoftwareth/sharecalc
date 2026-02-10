@@ -85,3 +85,34 @@ func CalculateShareBets(memberBet CalMemberBet, MemberID uint) (map[int]ShareBet
 	fmt.Println(string(jsonData))
 	return attributes, nil
 }
+
+func CalculateSharePayouts(pay_out float64, validAmount float64, memberBet ForPayoutShareBetRequest, MemberID uint) (ForPayoutShareBetRequest, error) {
+	// stake := memberBet.Amount
+	win_loss := pay_out - validAmount
+
+	memberBet.Payout = pay_out
+	memberBet.Winloss = win_loss
+
+	for k, v := range memberBet.MemberBet {
+
+		// payout_member := pay_out * (v.StakePercentBet * 0.01)
+		v.WinLossBet += v.StakePercentBet * win_loss * 0.01
+		v.WinLossTake += v.StakePercentTake * win_loss * -0.01
+
+		// คิดค่าคอม
+		betpercent := v.StakePercentBet * 0.01
+		takepercent := v.StakePercentTake * 0.01
+		available_bet := validAmount * betpercent
+		available_take := validAmount * takepercent
+
+		comm_bet := 0.01 * available_bet * v.CommPercentBet * 0.01
+		parent_comm_bet := 0.01 * (available_bet - available_take) * v.CommPercentTake * 0.01
+
+		v.CommBet += comm_bet
+		v.CommTake += parent_comm_bet - comm_bet
+
+		memberBet.MemberBet[k] = v
+	}
+
+	return memberBet, nil
+}

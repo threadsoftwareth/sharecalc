@@ -18,6 +18,15 @@ type MemberBet struct {
 	Commission   float64 `json:"comm_percent_bet"`
 }
 
+type ForPayoutShareBetRequest struct {
+	MemberID  uint                   `json:"member_id"`
+	MID       string                 `json:"mID"`
+	Amount    float64                `json:"amount"`
+	Payout    float64                `json:"payout"`
+	Winloss   float64                `json:"win_loss"`
+	MemberBet map[int]ShareBetResult `json:"member_bet"` // key is Level
+}
+
 type ShareBetResult struct {
 	MemberID uint `json:"member_id"`
 	ParentID uint `json:"parent_id"`
