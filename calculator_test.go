@@ -1,8 +1,10 @@
 package sharecalc
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -52,13 +54,23 @@ func TestCalculateSharesBet(t *testing.T) {
 			},
 		},
 	}
+	jsonData, _ := json.Marshal(mockData.MemberBet)
 
-	response, err := CalculateShareBets(mockData, 4884314)
+	response, err := CalculateShareBets(string(jsonData), mockData.Amount, 4884314)
 
 	fmt.Println(response)
 	fmt.Println(err)
 
-	assert.NotNil(t, mockData)
+	pay_out := 200.00
+	validAmount := 100.00
+	reportdate := time.Now().Format("2006-01-02")
+	oddstype := "PG"
+	responsePayout, responseAttributes, err := CalculateSharePayout(response, pay_out, validAmount, 4884314, reportdate, oddstype)
+	fmt.Println(responsePayout)
+	fmt.Println(responseAttributes)
+	fmt.Println(err)
+
+	assert.NotNil(t, responsePayout)
 }
 
 func TestValidate(t *testing.T) {

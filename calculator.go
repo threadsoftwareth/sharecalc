@@ -5,25 +5,28 @@ import (
 	"fmt"
 )
 
-func CalculateShareBets(memberBet CalMemberBet, MemberID uint) (map[int]ShareBetResult, error) {
-	// 1. ดึงสมาชิกเริ่มต้น (Player)
-	current, ok := memberBet.MemberBet[MemberID]
+func CalculateShareBets(memberBetData string, bet_amount float64, MemberID uint) (string, error) {
+
+	var MemberBet map[uint]MemberBet
+	if err := json.Unmarshal([]byte(memberBetData), &MemberBet); err != nil {
+		return "", fmt.Errorf("failed to unmarshal member bet: %v", err)
+	}
+	current, ok := MemberBet[MemberID]
 	if !ok {
-		return nil, fmt.Errorf("member not found")
+		return "", fmt.Errorf("member not found")
 	}
 
-	stake := memberBet.Amount
+	stake := bet_amount
 	pt_remain := 100.00
 	pt_nouse := 0.00
 	pt_totaltake := 0.00
 	attributes := map[int]ShareBetResult{}
 
 	for current.Level > 0 && current.ParentID != 0 {
-
 		member := current
-		parent, ok := memberBet.MemberBet[member.ParentID]
+		parent, ok := MemberBet[member.ParentID]
 		if !ok {
-			return nil, fmt.Errorf("parent member not found for member id %d", member.MemberID)
+			return "", fmt.Errorf("parent member not found for member id %d", member.MemberID)
 		}
 
 		current = parent
@@ -64,7 +67,7 @@ func CalculateShareBets(memberBet CalMemberBet, MemberID uint) (map[int]ShareBet
 		pt_remain -= pt_takepercent
 
 		if (100.0-pt_remain) > parent_pt_give && level > 0 {
-			return nil, fmt.Errorf("Incorrect PT!! member id %d", member.MemberID)
+			return "", fmt.Errorf("Incorrect PT!! member id %d", member.MemberID)
 		}
 
 		attributes[member.Level] = ShareBetResult{
@@ -78,22 +81,22 @@ func CalculateShareBets(memberBet CalMemberBet, MemberID uint) (map[int]ShareBet
 			StakeTake:        stake_take,
 			CommPercentTake:  parent.Commission,
 		}
-		fmt.Println("attributes:", attributes)
 	}
 
-	jsonData, _ := json.MarshalIndent(attributes, "", "  ")
-	fmt.Println(string(jsonData))
-	return attributes, nil
+	jsonData, _ := json.Marshal(attributes)
+	return string(jsonData), nil
 }
 
-func CalculateSharePayouts(pay_out float64, validAmount float64, memberBet ForPayoutShareBetRequest, MemberID uint) (ForPayoutShareBetRequest, error) {
-	// stake := memberBet.Amount
+func CalculateSharePayout(memberBetData string, pay_out float64, validAmount float64, MemberID uint, reportdate string, oddtype string) (string, string, error) {
+	var memberBet map[uint]ShareBetResult
+	if err := json.Unmarshal([]byte(memberBetData), &memberBet); err != nil {
+		return "", "", fmt.Errorf("failed to unmarshal member bet: %v", err)
+	}
+
 	win_loss := pay_out - validAmount
 
-	memberBet.Payout = pay_out
-	memberBet.Winloss = win_loss
-
-	for k, v := range memberBet.MemberBet {
+	attributes := []ShareBetReportSum{}
+	for k, v := range memberBet {
 
 		// payout_member := pay_out * (v.StakePercentBet * 0.01)
 		v.WinLossBet += v.StakePercentBet * win_loss * 0.01
@@ -111,8 +114,24 @@ func CalculateSharePayouts(pay_out float64, validAmount float64, memberBet ForPa
 		v.CommBet += comm_bet
 		v.CommTake += parent_comm_bet - comm_bet
 
-		memberBet.MemberBet[k] = v
+		memberBet[k] = v
+
+		attributes = append(attributes, ShareBetReportSum{
+			ID_PARENT:   v.ParentID,
+			ID_MEMBER:   v.MemberID,
+			Oddtype:     oddtype,
+			Reportdate:  reportdate,
+			Stake:       v.StakeBet,
+			StakeTake:   v.StakeTake,
+			CommTake:    v.CommTake,
+			WinlossTake: v.WinLossTake,
+			StakeBet:    v.StakeBet,
+			CommBet:     v.CommBet,
+			WinlossBet:  v.WinLossBet,
+		})
 	}
 
-	return memberBet, nil
+	jsonData, _ := json.Marshal(memberBet)
+	jsonAttributes, _ := json.Marshal(attributes)
+	return string(jsonData), string(jsonAttributes), nil
 }

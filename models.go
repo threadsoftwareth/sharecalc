@@ -44,3 +44,17 @@ type ShareBetResult struct {
 	CommTake         float64 `json:"comm_take"`
 	WinLossTake      float64 `json:"win_loss_take"`
 }
+
+type ShareBetReportSum struct {
+	ID_PARENT   uint    `json:"id_parent"`
+	ID_MEMBER   uint    `json:"id_member"`
+	Oddtype     string  `json:"oddtype"`
+	Reportdate  string  `json:"reportdate"`
+	Stake       float64 `json:"stake"`
+	StakeTake   float64 `json:"stake_take"`
+	CommTake    float64 `json:"comm_take"`
+	WinlossTake float64 `json:"winloss_take"`
+	StakeBet    float64 `json:"stake_bet"`
+	CommBet     float64 `json:"comm_bet"`
+	WinlossBet  float64 `json:"winloss_bet"`
+}
