@@ -10,6 +10,30 @@ import (
 )
 
 func TestCalculateSharesBet(t *testing.T) {
+
+	// got -> params {
+	// 	amount
+	// 	ID member  1234
+	// 	typegame
+	// 	bet ID
+	// }
+
+	// id member มีสิท เล่นไหม หรือว่า ....
+	// ถ้ามันผ่าน id -> mid มันออกมา 1,2,3,4
+	// id ตัวมัน เอง ไป ต่อท้าย ด้วย ,  = 1,2,3,4,1234
+	// 	 []uint{1,2,3,4,1234}
+	// typegame => ไป หาว่าจะต้องดึงข้อมูล ที่ ตารางไหน ของ game นั้นๆ => ข้อมูลด้วย  []uint{1,2,3,4,1234} ชฬ โดยใช้ cahce ช่วย
+	// เราจะได้ข้อมูล  []configgamepg ...
+	// เราจะต้อง ทำข้อมูล ให้มัน เป็นเเบบ ที่เราต้องการในการส่งไปหา got
+	// MemberID: 4884314,
+	// MID:      "1,17276,20463,4498374",
+	// Amount:   100.0,
+	// MemberBet: map[uint]MemberBet{
+	// 	4884314: {
+	// 		MemberID:     4884314,
+
+	// ลอง เอา params MemberBet เข้าใช้งาน lib พี่ เพื่อดูว่า ข้อมูล มันสามารถใช้งานได้ไหม
+
 	mockData := CalMemberBet{
 		MemberID: 4884314,
 		MID:      "1,17276,20463,4498374",
@@ -45,7 +69,7 @@ func TestCalculateSharesBet(t *testing.T) {
 			},
 			1: {
 				MemberID:     1,
-				ParentID:     1,
+				ParentID:     0,
 				Level:        0,
 				GivePt:       100,
 				KeepPt:       0,
@@ -55,6 +79,7 @@ func TestCalculateSharesBet(t *testing.T) {
 		},
 	}
 	jsonData, _ := json.Marshal(mockData.MemberBet)
+	fmt.Println(string(jsonData))
 
 	response, err := CalculateShareBets(string(jsonData), mockData.Amount, 4884314)
 
