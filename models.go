@@ -46,8 +46,8 @@ type ShareBetResult struct {
 }
 
 type ShareBetReportSum struct {
-	ID_PARENT   uint    `json:"id_parent"`
-	ID_MEMBER   uint    `json:"id_member"`
+	ID_PARENT   uint    `json:"ID_PARENT"`
+	ID_MEMBER   uint    `json:"ID_MEMBER"`
 	Oddtype     string  `json:"oddtype"`
 	Reportdate  string  `json:"reportdate"`
 	Stake       float64 `json:"stake"`

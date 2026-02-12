@@ -66,6 +66,7 @@ func TestCalculateSharesBet(t *testing.T) {
 	reportdate := time.Now().Format("2006-01-02")
 	oddstype := "PG"
 	responsePayout, responseAttributes, err := CalculateSharePayout(response, pay_out, validAmount, 4884314, reportdate, oddstype)
+
 	fmt.Println(responsePayout)
 	fmt.Println(responseAttributes)
 	fmt.Println(err)
