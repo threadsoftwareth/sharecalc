@@ -11,11 +11,11 @@ type MemberBet struct {
 	MemberID     uint    `json:"member_id"`
 	ParentID     uint    `json:"parent_id"`
 	Level        int     `json:"level"`
-	GivePt       float64 `json:"stake_percent_take"`
-	KeepPt       float64 `json:"comm_percent_take"`
-	ForcePt      float64 `json:"force_percent_bet"`
-	TakeRemainPT float64 `json:"stake_percent_bet"`
-	Commission   float64 `json:"comm_percent_bet"`
+	GivePt       float64 `json:"give_pt"`
+	KeepPt       float64 `json:"keep_pt"`
+	ForcePt      float64 `json:"force_pt"`
+	TakeRemainPT float64 `json:"take_remain_pt"`
+	Commission   float64 `json:"commission"`
 }
 
 type ForPayoutShareBetRequest struct {
