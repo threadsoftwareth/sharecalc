@@ -28,9 +28,10 @@ type ForPayoutShareBetRequest struct {
 }
 
 type ShareBetResult struct {
-	MemberID uint `json:"member_id"`
-	ParentID uint `json:"parent_id"`
-	Level    int  `json:"level"`
+	MemberID    uint `json:"member_id"`
+	ParentID    uint `json:"parent_id"`
+	ParentLevel int  `json:"parent_level"`
+	Level       int  `json:"level"`
 	// bet
 	StakePercentBet float64 `json:"stake_percent_bet"`
 	CommPercentBet  float64 `json:"comm_percent_bet"`

@@ -73,6 +73,7 @@ func CalculateShareBets(memberBetData string, bet_amount float64, MemberID uint)
 		attributes[member.Level] = ShareBetResult{
 			MemberID:         member.MemberID,
 			ParentID:         member.ParentID,
+			ParentLevel:      level,
 			Level:            member.Level,
 			StakePercentBet:  current_pt_remain,
 			CommPercentBet:   member.Commission,
