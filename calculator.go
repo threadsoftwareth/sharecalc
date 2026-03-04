@@ -137,13 +137,22 @@ func CalculateSharePayout(memberBetData string, pay_out float64, validAmount flo
 	return string(jsonData), string(jsonAttributes), nil
 }
 
-func CalculateSharePayoutCancel(memberBetData string) (string, string, error) {
+func CalculateSharePayoutCancel(betdata, memberBetData string) (string, string, error) {
+	var BetData map[uint]ShareBetResult
+	if err := json.Unmarshal([]byte(betdata), &BetData); err != nil {
+		return "", "", fmt.Errorf("failed to unmarshal bet data: %v", err)
+	}
 	var memberBet []ShareBetReportSum
 	if err := json.Unmarshal([]byte(memberBetData), &memberBet); err != nil {
 		return "", "", fmt.Errorf("failed to unmarshal member bet: %v", err)
 	}
 
-	// กลับเครื่องหมายทุกค่าเพื่อยกเลิก/ลบยอด
+	for k, v := range BetData {
+		v.WinLossBet = 0
+		v.WinLossTake = 0
+		BetData[k] = v
+	}
+
 	canceledData := []ShareBetReportSum{}
 	for _, v := range memberBet {
 		canceledData = append(canceledData, ShareBetReportSum{
@@ -161,7 +170,7 @@ func CalculateSharePayoutCancel(memberBetData string) (string, string, error) {
 		})
 	}
 
-	jsonData, _ := json.Marshal(memberBet)
-	jsonAttributes, _ := json.Marshal(canceledData)
-	return string(jsonData), string(jsonAttributes), nil
+	jsonNewData, _ := json.Marshal(BetData)
+	jsonReportCanceledData, _ := json.Marshal(canceledData)
+	return string(jsonNewData), string(jsonReportCanceledData), nil
 }

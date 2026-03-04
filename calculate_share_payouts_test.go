@@ -7,6 +7,9 @@ import (
 )
 
 func TestCalculateSharePayoutCancel(t *testing.T) {
+	// ข้อมูล betdata
+	betdata := `{"1": {"level": 1, "comm_bet": 0, "comm_take": 0, "member_id": 2, "parent_id": 1, "stake_bet": 15, "stake_take": 15, "parent_level": 0, "win_loss_bet": -13.5, "win_loss_take": 13.5, "comm_percent_bet": 0, "comm_percent_take": 0, "stake_percent_bet": 15, "stake_percent_take": 15}, "2": {"level": 2, "comm_bet": 0, "comm_take": 0, "member_id": 3, "parent_id": 2, "stake_bet": 20, "stake_take": 5, "parent_level": 1, "win_loss_bet": -18, "win_loss_take": 4.5, "comm_percent_bet": 0, "comm_percent_take": 0, "stake_percent_bet": 20, "stake_percent_take": 5}, "3": {"level": 3, "comm_bet": 0, "comm_take": 0, "member_id": 4, "parent_id": 3, "stake_bet": 25, "stake_take": 5, "parent_level": 2, "win_loss_bet": -22.5, "win_loss_take": 4.5, "comm_percent_bet": 0, "comm_percent_take": 0, "stake_percent_bet": 25, "stake_percent_take": 5}, "4": {"level": 4, "comm_bet": 0, "comm_take": 0, "member_id": 5, "parent_id": 4, "stake_bet": 30, "stake_take": 5, "parent_level": 3, "win_loss_bet": -27, "win_loss_take": 4.5, "comm_percent_bet": 0, "comm_percent_take": 0, "stake_percent_bet": 30, "stake_percent_take": 5}, "6": {"level": 6, "comm_bet": 0, "comm_take": 0, "member_id": 7, "parent_id": 5, "stake_bet": 100, "stake_take": 70, "parent_level": 4, "win_loss_bet": -90, "win_loss_take": 63, "comm_percent_bet": 0, "comm_percent_take": 0, "stake_percent_bet": 100, "stake_percent_take": 70}}`
+
 	// ข้อมูลที่ต้องการ cancel
 	data := []ShareBetReportSum{
 		{Stake: 20, Oddtype: "HK", CommBet: 0, ID_MEMBER: 3, ID_PARENT: 2, CommTake: 0, StakeBet: 20, Reportdate: "2026-03-02", StakeTake: 5, WinlossBet: -17.400000000000002, WinlossTake: 4.3500000000000005},
@@ -21,28 +24,38 @@ func TestCalculateSharePayoutCancel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to marshal test data: %v", err)
 	}
-	fmt.Println(string(jsonData))
-	// เรียกใช้ฟังก์ชัน CalculateSharePayoutCancel
-	originalData, canceledData, err := CalculateSharePayoutCancel(string(jsonData))
+	fmt.Println("memberBetData:", string(jsonData))
+
+	// เรียกใช้ฟังก์ชัน CalculateSharePayoutCancel โดยส่ง betdata และ memberBetData
+	newData, canceledData, err := CalculateSharePayoutCancel(betdata, string(jsonData))
 	if err != nil {
 		t.Fatalf("CalculateSharePayoutCancel failed: %v", err)
 	}
 
 	// แปลง result กลับมาเป็น struct
-	var original []ShareBetReportSum
+	var newDataResult map[uint]ShareBetResult
 	var canceled []ShareBetReportSum
 
-	if err := json.Unmarshal([]byte(originalData), &original); err != nil {
-		t.Fatalf("Failed to unmarshal original data: %v", err)
+	if err := json.Unmarshal([]byte(newData), &newDataResult); err != nil {
+		t.Fatalf("Failed to unmarshal new data: %v", err)
 	}
 
 	if err := json.Unmarshal([]byte(canceledData), &canceled); err != nil {
 		t.Fatalf("Failed to unmarshal canceled data: %v", err)
 	}
 
-	// ตรวจสอบว่าข้อมูล original ยังคงเหมือนเดิม
-	if len(original) != len(data) {
-		t.Errorf("Expected original data length %d, got %d", len(data), len(original))
+	// ตรวจสอบว่าข้อมูล newData มี WinlossBet และ WinlossTake เป็น 0
+	t.Log("New Data (with WinLoss = 0):")
+	for k, item := range newDataResult {
+		t.Logf("Key %d: Level=%d, ID_MEMBER=%d, ID_PARENT=%d, StakeBet=%.2f, StakeTake=%.2f, CommBet=%.2f, CommTake=%.2f, WinlossBet=%.2f, WinlossTake=%.2f",
+			k, item.Level, item.MemberID, item.ParentID, item.StakeBet, item.StakeTake, item.CommBet, item.CommTake, item.WinLossBet, item.WinLossTake)
+
+		if item.WinLossBet != 0 {
+			t.Errorf("Key %d: Expected WinlossBet 0, got %.2f", k, item.WinLossBet)
+		}
+		if item.WinLossTake != 0 {
+			t.Errorf("Key %d: Expected WinlossTake 0, got %.2f", k, item.WinLossTake)
+		}
 	}
 
 	// ตรวจสอบว่าข้อมูล canceled มีเครื่องหมายกลับกัน
@@ -86,8 +99,8 @@ func TestCalculateSharePayoutCancel(t *testing.T) {
 	}
 
 	// แสดงผลลัพธ์
-	t.Log("Original Data:")
-	t.Log(originalData)
+	t.Log("\nNew Data JSON:")
+	t.Log(newData)
 	t.Log("\nCanceled Data (reversed signs):")
 	t.Log(canceledData)
 }
